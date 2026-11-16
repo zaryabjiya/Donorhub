@@ -1,0 +1,16 @@
+const $=s=>document.querySelector(s),G=["A+","A-","B+","B-","O+","O-","AB+","AB-"];
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let tok="";
+const call=async(u,m="GET",b)=>{const r=await fetch(u,{method:m,headers:{"x-admin-token":tok,"Content-Type":"application/json"},body:b?JSON.stringify(b):undefined});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error||"Request failed");return j};
+const note=(m,ok)=>{$("#msg").innerHTML=m?`<div class="msg ${ok?"ok":"er"}">${esc(m)}</div>`:""};
+async function load(){const s=await call("/api/admin/summary");$("#dash").hidden=false;
+$("#stats").textContent=`${s.donors} donors · ${s.requests} blood requests · ${s.contacts} contact requests · ${s.partners.length} partner enquiries`;
+$("#pt").innerHTML=`<tr><th>When</th><th>Organisation</th><th>Contact</th><th>Phone</th><th>Email</th><th>Message</th></tr>`+(s.partners.length?s.partners.map(p=>`<tr><td>${esc(p.created_at)}</td><td>${esc(p.org)}</td><td>${esc(p.name)}</td><td>${esc(p.phone)}</td><td>${esc(p.email)}</td><td>${esc(p.note)}</td></tr>`).join(""):`<tr><td colspan="6">No enquiries yet.</td></tr>`);
+$("#bt").innerHTML=`<tr><th>Bank</th>${G.map(g=>`<th>${g}</th>`).join("")}<th></th></tr>`+s.banks.map(b=>`<tr data-id="${b.id}"><td>${esc(b.name)}<small>${esc(b.area)}</small></td>${b.stock.map(n=>`<td><input type="number" min="0" max="999" value="${n}" aria-label="stock"></td>`).join("")}<td><button class="btn sec">Save</button></td></tr>`).join("");
+$("#rt").innerHTML=`<tr><th>When</th><th>Patient</th><th>Group</th><th>Units</th><th>Hospital</th><th>Phone</th><th>Alerted</th><th>Status</th><th></th></tr>`+s.recent.map(r=>`<tr><td>${esc(r.created_at)}</td><td>${esc(r.patient)}</td><td>${esc(r.grp)}</td><td>${r.units}</td><td>${esc(r.hospital)}</td><td>${esc(r.phone)}</td><td>${r.notified}</td><td>${esc(r.status)}</td><td><button class="btn sec" data-del="requests/${r.id}">Delete</button></td></tr>`).join("");
+$("#dt").innerHTML=`<tr><th>Joined</th><th>Name</th><th>Phone</th><th>Group</th><th>Area</th><th>Last donation</th><th></th></tr>`+(s.donorList.length?s.donorList.map(d=>`<tr><td>${esc(d.created_at)}</td><td>${esc(d.name)}</td><td>${esc(d.phone)}</td><td>${esc(d.grp)}</td><td>${esc(d.area)}</td><td>${esc(d.last_donation||"-")}</td><td><button class="btn sec" data-del="donors/${d.id}">Delete</button></td></tr>`).join(""):`<tr><td colspan="7">No donors yet.</td></tr>`)}
+document.addEventListener("click",async e=>{const b=e.target.closest("button[data-del]");if(!b||!confirm("Delete this record permanently?"))return;try{await call("/api/admin/"+b.dataset.del,"DELETE");note("Deleted.",1);await load()}catch(x){note(x.message)}});
+$("#fTok").onsubmit=async e=>{e.preventDefault();tok=$("#tok").value;try{note("");await load()}catch(x){note(x.message)}};
+$("#bt").onclick=async e=>{const b=e.target.closest("button");if(!b)return;const tr=b.closest("tr");
+try{await call("/api/admin/banks/"+tr.dataset.id,"PUT",{stock:[...tr.querySelectorAll("input")].map(i=>+i.value)});note("Stock saved.",1)}catch(x){note(x.message)}};
+$("#fBank").onsubmit=async e=>{e.preventDefault();try{await call("/api/admin/banks","POST",{name:$("#bn").value,area:$("#ba").value});e.target.reset();note("Bank added.",1);await load()}catch(x){note(x.message)}};

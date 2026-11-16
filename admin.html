@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DonorHub admin</title><link rel="stylesheet" href="/style.css"><link rel="icon" href="/favicon.svg" type="image/svg+xml"></head>
+<body><main class="wrap"><div class="panel wide">
+<h2>DonorHub admin</h2>
+<form id="fTok" class="bar"><div><label for="tok">Admin token</label><input id="tok" type="password" autocomplete="current-password" required></div><button class="btn">Sign in</button></form>
+<div id="msg" aria-live="polite"></div>
+<div id="dash" hidden>
+<p class="sub" id="stats"></p>
+<h2>Blood bank stock</h2>
+<div class="tw"><table id="bt"></table></div>
+<form id="fBank" class="bar" style="margin-top:14px"><div><label for="bn">New bank name</label><input id="bn" required></div><div><label for="ba">Area</label><input id="ba" required></div><button class="btn">Add bank</button></form>
+<h2 style="margin-top:28px">Partner enquiries</h2>
+<div class="tw"><table id="pt"></table></div>
+<h2 style="margin-top:28px">Donors</h2>
+<div class="tw"><table id="dt"></table></div>
+<h2 style="margin-top:28px">Recent blood requests</h2>
+<div class="tw"><table id="rt"></table></div>
+</div></div></main><script src="/admin.js"></script></body></html>
